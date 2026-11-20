@@ -5,7 +5,7 @@ const path = require('path');
 
 const W = 960;
 const H = 540;
-const TOTAL = 9;
+const TOTAL = 10;
 
 const C = {
   ink: '#0D0E12',
@@ -23,9 +23,11 @@ const C = {
 };
 
 const ROOT = path.resolve(__dirname, '..');
-const OUT = path.join(__dirname, 'OwlFlow-Hackathon-Pitch.pdf');
+// Writes the 10-slide v2 deck; the original 9-slide OwlFlow-Hackathon-Pitch.pdf is kept as-is.
+const OUT = path.join(__dirname, 'OwlFlow-Hackathon-Pitch-v2.pdf');
 const KENNESAW_MAP = path.join(ROOT, 'public', 'maps', 'ksu-kennesaw.png');
 const MARIETTA_MAP = path.join(ROOT, 'public', 'maps', 'ksu-marietta.png');
+const REDDIT_POST = path.join(__dirname, 'assets', 'reddit-ksu-parking-post.png');
 const REPO_URL = 'https://github.com/Final-Eclipse/owlflow/tree/feat/owlflow-p4b';
 
 const SOURCES = {
@@ -184,6 +186,18 @@ function drawMapCrop(imagePath, x, y, width, height, labelValue) {
   doc.save().roundedRect(x, y, width, height, 13).strokeColor(C.line).lineWidth(1.2).stroke().restore();
 }
 
+function screenshotCard(image, y, height, fill = C.panel, padX = 12, padY = 6) {
+  const imageH = height - padY * 2;
+  const imageW = imageH * (image.width / image.height);
+  const width = imageW + padX * 2;
+  const x = (W - width) / 2;
+  doc.save();
+  doc.roundedRect(x + 4, y + 5, width, height, 13).fillOpacity(0.2).fill('#000000');
+  doc.fillOpacity(1).lineWidth(1.2).roundedRect(x, y, width, height, 13).fillAndStroke(fill, C.line);
+  doc.restore();
+  doc.image(image, x + padX, y + padY, { width: imageW, height: imageH });
+}
+
 function statCard({ x, y, width, accent, value, label, source }) {
   panel(x, y, width, 132, accent);
   mono(value, x + 18, y + 22, width - 36, 28, accent);
@@ -268,8 +282,15 @@ async function render() {
   doc.roundedRect(746, 471, 102, 5, 2.5).fill(C.blue);
   doc.roundedRect(852, 471, 39, 5, 2.5).fill(C.coral);
 
-  // 02 — Problem / campus impact
-  beginSlide(2, 'cat campus-friction.log', 'CAMPUS IMPACT · 25', C.green);
+  // 02 — Student voice: r/KSU parking post
+  beginSlide(2, 'grep -i parking r/KSU', 'CAMPUS IMPACT · 25', C.green);
+  titleBlock('Paid for a pass. Still no spot.', 'A Marietta campus student on r/KSU: a $100 pass, a lot that is usually full, and tickets for parking wherever they can.', C.green);
+  // Card fill matches the screenshot's dark-mode background so the padding blends in.
+  screenshotCard(doc.openImage(REDDIT_POST), 151, 325, '#0E1113');
+  text('Screenshot of a public post, shown as posted. One student’s account; the sourced figures on the next slide show the scale.', 52, 486, 856, 9.5, C.dim, 'Helvetica-Oblique', { align: 'center' });
+
+  // 03 — Problem / campus impact
+  beginSlide(3, 'cat campus-friction.log', 'CAMPUS IMPACT · 25', C.green);
   titleBlock('Three queues steal the same scarce thing: time.', 'Parking uncertainty, meal rushes, and shared laundry all collide with fixed class schedules.', C.green);
   statCard({ x: 52, y: 157, width: 268, accent: C.yellow, value: '~11 min', label: 'average time students needed to find campus parking in one university study', source: 2 });
   statCard({ x: 346, y: 157, width: 268, accent: C.green, value: '5–14%', label: 'of food served became plate waste in a university dining-hall study', source: 3 });
@@ -284,8 +305,8 @@ async function render() {
   text('students make time-critical decisions with fragmented, stale, or invisible information.', 236, 463, 640, 12.5, C.white, 'Helvetica-Bold');
   doc.restore();
 
-  // 03 — Core solution
-  beginSlide(3, './owlflow --plan my-day', 'CORE SOLUTION', C.yellow);
+  // 04 — Core solution
+  beginSlide(4, './owlflow --plan my-day', 'CORE SOLUTION', C.yellow);
   titleBlock('One schedule becomes one coordinated plan.', 'OwlFlow optimizes the route to campus, the best dining window, and a laundry cycle that fits before class.', C.yellow);
   panel(52, 153, 176, 250, C.blue);
   smallCaps('ONE INPUT', 70, 174, 140, C.blue, 9);
@@ -315,8 +336,8 @@ async function render() {
   smallCaps('THE PRODUCT PROMISE', 52, 435, 260, C.dim, 8.5);
   mono('LESS GUESSING > MORE ON-TIME MOMENTS', 52, 456, 856, 20, C.yellow);
 
-  // 04 — AI core
-  beginSlide(4, 'inspect owlflow.ai.core', 'USE OF AI · 25', C.blue);
+  // 05 — AI core
+  beginSlide(5, 'inspect owlflow.ai.core', 'USE OF AI · 25', C.blue);
   titleBlock('The AI is the decision layer.', 'The same intelligence powers every recommendation, every replan, and the Owl AI explanation.', C.blue);
   panel(52, 151, 244, 264, C.green);
   smallCaps('LIVE + CONTEXT SIGNALS', 70, 172, 205, C.green, 9);
@@ -364,8 +385,8 @@ async function render() {
   text('opt-in explanation + vision verification · local fallback', 590, 456, 300, 11, C.white, 'Helvetica-Bold');
   doc.restore();
 
-  // 05 — Demo
-  beginSlide(5, './demo --switch-scenarios', 'LIVE DEMO · 2:00', C.coral);
+  // 06 — Demo
+  beginSlide(6, './demo --switch-scenarios', 'LIVE DEMO · 2:00', C.coral);
   titleBlock('The plan changes when campus conditions change.', 'Three deterministic scenarios prove that OwlFlow selects a different best move instead of repeating one answer.', C.coral);
   const tableX = 52;
   const tableY = 154;
@@ -411,8 +432,8 @@ async function render() {
   });
   text('Backup values are documented prototype outputs; operational campus readings are simulated in this branch. [6]', 54, 474, 850, 9.5, C.dim, 'Helvetica-Oblique');
 
-  // 06 — Creativity
-  beginSlide(6, 'git diff ordinary-campus-app', 'CREATIVITY · 15', C.magenta);
+  // 07 — Creativity
+  beginSlide(7, 'git diff ordinary-campus-app', 'CREATIVITY · 15', C.magenta);
   titleBlock('We connected the parts students overlook.', 'The clever part is not another dashboard. It is one plan that understands how small campus delays compound.', C.magenta);
   const creative = [
     {
@@ -457,8 +478,8 @@ async function render() {
   text('Preference filters include halal, vegetarian, vegan, and gluten-free. Production must use official menu/allergen controls.', 67, 467, 826, 10.5, C.muted, 'Helvetica-Bold', { align: 'center' });
   doc.restore();
 
-  // 07 — Feasibility
-  beginSlide(7, './rollout --campus-ready', 'FEASIBILITY · 20', C.green);
+  // 08 — Feasibility
+  beginSlide(8, './rollout --campus-ready', 'FEASIBILITY · 20', C.green);
   titleBlock('Start small. Prove it. Then connect both campuses.', 'A staged rollout replaces each simulated adapter with an approved KSU feed while preserving the local-first planner.', C.green);
   const phases = [
     ['NOW', 'Reproducible static demo\nSimulated campus signals', C.dim],
@@ -505,8 +526,8 @@ async function render() {
   text('*Assumes 1,000 input + 200 output tokens/request at $0.10/$0.40 per 1M tokens. [5]', 54, 462, 852, 9.2, C.dim, 'Helvetica-Oblique');
   text('KSU added or converted almost 600 student parking spaces for Fall 2026, showing active mobility investment. [4]', 54, 478, 852, 9.2, C.dim, 'Helvetica-Oblique');
 
-  // 08 — Impact + close
-  beginSlide(8, './launch --pilot ksu', 'PITCH · 15', C.yellow);
+  // 09 — Impact + close
+  beginSlide(9, './launch --pilot ksu', 'PITCH · 15', C.yellow);
   titleBlock('Give every Owl the best next move.', 'Measure the time, demand, and waste outcomes before expanding beyond a focused 90-day pilot.', C.yellow);
   panel(52, 151, 250, 258, C.yellow);
   smallCaps('POTENTIAL REACH', 72, 174, 210, C.yellow, 9);
@@ -542,8 +563,8 @@ async function render() {
   mono('LESS GUESSING. MORE LIVING.', 224, 453, 664, 19, C.ink, { align: 'right' });
   doc.restore();
 
-  // 09 — Sources + boundaries
-  beginSlide(9, 'cat sources.md', 'APPENDIX · SOURCES', C.blue);
+  // 10 — Sources + boundaries
+  beginSlide(10, 'cat sources.md', 'APPENDIX · SOURCES', C.blue);
   titleBlock('Sources & claim boundaries', 'External findings are paraphrased. Prototype outputs are labeled as simulated or deterministic.', C.blue);
   sourceEntry(1, 'Kennesaw State University — About KSU', 'Current institutional description: more than 51,000 students across two metro Atlanta campuses.', SOURCES.ksu, 52, 149, 410, C.blue);
   sourceEntry(2, 'Utah Valley University — Parking and Pedestrians', 'Student research reported an average of about 11 minutes to find a campus parking space.', SOURCES.parkingStudy, 52, 229, 410, C.yellow);

@@ -4,8 +4,10 @@ This folder contains a five-minute, 16:9 PDF pitch deck tailored to the AI Club 
 
 ## Files
 
-- `OwlFlow-Hackathon-Pitch.pdf` — generated presentation
-- `generate-deck.cjs` — editable PDFKit source
+- `OwlFlow-Hackathon-Pitch-v2.pdf` — 10-slide presentation; slide 2 shows the r/KSU parking post
+- `OwlFlow-Hackathon-Pitch.pdf` — original 9-slide presentation, kept unchanged
+- `generate-deck.cjs` — editable PDFKit source for the 10-slide version
+- `assets/reddit-ksu-parking-post.png` — r/KSU screenshot used on slide 2 of the 10-slide version
 - `PITCH_SCRIPT.md` — timed narration, live-demo cues, and judge Q&A
 - `package.json` / `package-lock.json` — presentation-only dependencies
 
@@ -17,9 +19,11 @@ npm ci
 npm run build
 ```
 
-The command writes `OwlFlow-Hackathon-Pitch.pdf` in this directory.
+The command writes `OwlFlow-Hackathon-Pitch-v2.pdf` in this directory. It does not overwrite the original `OwlFlow-Hackathon-Pitch.pdf`.
 
 ## Pitch timing
+
+Slide numbers below and in `PITCH_SCRIPT.md` follow the original 9-slide deck. In the 10-slide version, the r/KSU post is slide 2 and each later slide moves down by one.
 
 | Time | Slides | Purpose |
 |---|---:|---|
@@ -54,6 +58,8 @@ The deck uses project-owned map assets from:
 - `../public/maps/ksu-kennesaw.png`
 - `../public/maps/ksu-marietta.png`
 
-External facts and URLs appear on slide 9. The humorous student lines are original paraphrases rather than copied Reddit comments. This preserves the requested tone without presenting uncited comments as research.
+External facts and URLs appear on the sources slide (slide 9 in the original deck, slide 10 in the 10-slide version). The humorous student lines are original paraphrases rather than copied Reddit comments. This preserves the requested tone without presenting uncited comments as research.
+
+Slide 2 of the 10-slide version shows a screenshot of one public r/KSU post as posted. Its caption labels it as one student's account, and the sourced figures on the next slide carry the scale claims.
 
 The model-cost example is illustrative, based on 5,000 requests per day, 1,000 input tokens and 200 output tokens per request, and the Google AI Studio Flash-Lite rates visible on November 20, 2026. Hosting, networking, video processing, taxes, and future price changes are excluded.
