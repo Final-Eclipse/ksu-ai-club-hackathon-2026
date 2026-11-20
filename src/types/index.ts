@@ -345,6 +345,12 @@ export interface VisionBox extends NormalizedBox {
   confidence: number;
 }
 
+/** Seconds within a bundled video that one camera view loops over. */
+export interface VideoClip {
+  start: number;
+  end: number;
+}
+
 export interface VisionFeed {
   id: string;
   campusId: CampusId;
@@ -354,6 +360,7 @@ export interface VisionFeed {
   angle: CameraAngle;
   label: string;
   videoSrc: string;
+  clip?: VideoClip;
   bayGrid: NormalizedBox[];
   referenceStrip: NormalizedBox;
 }

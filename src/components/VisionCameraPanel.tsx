@@ -21,6 +21,7 @@ import type {
   CvOverride,
   DeckReading,
   Scenario,
+  VideoClip,
   VisionFeed,
   VisionResult,
 } from '../types';
@@ -39,6 +40,19 @@ interface VisionCameraPanelProps {
 const CAMERA_WIDTH = 960;
 const CAMERA_HEIGHT = 540;
 const DETECTION_INTERVAL_MS = 250;
+const CLIP_SEEK_TOLERANCE_S = 0.25;
+
+function formatClipTime(seconds: number): string {
+  const whole = Math.floor(seconds);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
+}
+
+function keepWithinClip(video: HTMLVideoElement, clip: VideoClip | undefined): void {
+  if (!clip || video.seeking || video.readyState < HTMLMediaElement.HAVE_METADATA) return;
+  if (video.currentTime >= clip.end || video.currentTime < clip.start - CLIP_SEEK_TOLERANCE_S) {
+    video.currentTime = clip.start;
+  }
+}
 
 function initialVisionResult(feed: VisionFeed): VisionResult {
   const boxes = feed.bayGrid.map((box) => ({
@@ -196,7 +210,9 @@ function copyCurrentFrame(
   fallback: HTMLCanvasElement | null,
   videoReady: boolean,
 ): boolean {
-  if (videoReady && video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+  if (videoReady && video) {
+    // Skip frames while a clip loop seeks instead of analyzing the hidden fallback canvas.
+    if (video.seeking || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return false;
     context.drawImage(video, 0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
     return true;
   }
@@ -290,6 +306,8 @@ export function VisionCameraPanel({
 
     const detect = (elapsedMs: number) => {
       detectorAnimationRef.current = window.requestAnimationFrame(detect);
+      // Per-frame check keeps clip loops tight; onTimeUpdate covers throttled background tabs.
+      if (videoRef.current) keepWithinClip(videoRef.current, feed.clip);
       if (elapsedMs - lastDetectionMs < DETECTION_INTERVAL_MS) return;
       lastDetectionMs = elapsedMs;
       if (verifyingRef.current) return;
@@ -403,7 +421,10 @@ export function VisionCameraPanel({
       </div>
 
       <div className="ps-camera-stream-meta">
-        <span><Video size={14} /> {feed.videoSrc}</span>
+        <span>
+          <Video size={14} /> {feed.videoSrc}
+          {feed.clip && ` · loop ${formatClipTime(feed.clip.start)}–${formatClipTime(feed.clip.end)}`}
+        </span>
         <span><ScanLine size={14} /> Pixel CV · 4 FPS · RGB + edge EMA</span>
       </div>
 
@@ -417,16 +438,17 @@ export function VisionCameraPanel({
           Animated parking deck camera fallback.
         </canvas>
         <video
-          key={feed.videoSrc}
+          key={feed.id}
           ref={videoRef}
           className={videoReady ? 'ps-camera-video ps-camera-video--ready' : 'ps-camera-video'}
-          src={feed.videoSrc}
+          src={feed.clip ? `${feed.videoSrc}#t=${feed.clip.start}` : feed.videoSrc}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
           aria-label={`Bundled ${feed.deckName} camera ${feed.angle} video`}
+          onTimeUpdate={(event) => keepWithinClip(event.currentTarget, feed.clip)}
           onLoadedData={() => {
             videoReadyRef.current = true;
             setVideoReady(true);

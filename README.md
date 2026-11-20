@@ -40,7 +40,7 @@ Suggested sequence:
 5. Ask Owl AI about ETC, EV charging, laundry, a bus, or the next class. Sending a message does not modify the plan; only an action button does.
 6. Open Dorm Laundry and show live machine countdowns plus CV Lost & Found.
 7. Open the north-up 2D map and inspect labeled roads, white open-stall dots, parking facilities, glowing EV pins, and Apple/Google directions.
-8. Open any camera angle. OwlFlow tries its `/videos/{deckId}-{angle}.mp4` asset, falls back to animated canvas CCTV when unavailable, and runs RGB/edge CV at 4 FPS. Push a level-scoped CV override.
+8. Open any camera angle. OwlFlow plays bundled garage footage from `public/videos/` (one calibrated CCTV view per angle, looped from `parking_video3.mp4` or `parking_video5.mp4`), falls back to animated canvas CCTV when unavailable, and runs RGB/edge CV at 4 FPS. Push a level-scoped CV override.
 9. Switch to Live Big Owl Bus, choose a moving vehicle, and show load, pass-up risk, status, next-stop ETA, and the official Passio GO! link.
 
 ## Workspace
