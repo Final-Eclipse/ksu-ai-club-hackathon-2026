@@ -1,0 +1,13 @@
+{
+  "name": "owlflow-hackathon-pitch",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PDF pitch deck generator for the OwlFlow hackathon project",
+  "scripts": {
+    "build": "node generate-deck.cjs"
+  },
+  "dependencies": {
+    "pdfkit": "^0.17.2",
+    "qrcode": "^1.5.4"
+  }
+}
