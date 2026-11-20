@@ -1,5 +1,12 @@
-const CACHE = 'owlflow-p4b';
-const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './favicon.svg'];
+const CACHE = 'owlflow-p6';
+const APP_SHELL = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './favicon.svg',
+  './maps/ksu-kennesaw.png',
+  './maps/ksu-marietta.png',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));

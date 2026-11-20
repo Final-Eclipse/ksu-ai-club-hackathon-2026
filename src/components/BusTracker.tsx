@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BusFront, Clock3, MapPin, Navigation, UsersRound } from 'lucide-react';
+import { BusFront, Clock3, MapPin, Navigation, UsersRound, X } from 'lucide-react';
 import { BUS_ROUTES } from '../data/busRoutes';
-import { getCampusStreets } from '../data/streets';
 import { busPoint, busTelemetry, routePolyline } from '../engine/bus';
-import { projectFootprint, projectGeo2d } from '../engine/mapLayout';
 import { useNowSeconds } from '../hooks/useNowSeconds';
 import type {
   BusTrackerRoute,
   BusTrackerStop,
   Campus,
-  Place,
   Scenario,
 } from '../types';
 import type { BusPathPoint } from '../engine/bus';
@@ -17,63 +14,152 @@ import type { BusPathPoint } from '../engine/bus';
 interface BusTrackerProps {
   scenario: Scenario;
   campus: Campus;
-  target: Place;
   minute: number;
 }
 
-interface ProjectedStop {
+interface SchematicStop {
   stop: BusTrackerStop;
   point: BusPathPoint;
+  labelX: number;
+  labelY: number;
+  anchor: 'start' | 'end';
 }
 
-interface ProjectedRoute {
+interface SchematicRoute {
   route: BusTrackerRoute;
   points: BusPathPoint[];
-  stops: ProjectedStop[];
+  stops: SchematicStop[];
 }
 
-function requireFirstRoute(routes: readonly ProjectedRoute[], campusName: string): ProjectedRoute {
-  const first = routes[0];
-  if (!first) throw new Error(`${campusName} requires at least one local Big Owl Bus route.`);
-  return first;
+interface RouteGeometry {
+  points: readonly BusPathPoint[];
+  stopPoints: Record<string, BusPathPoint>;
 }
 
-export function BusTracker({ scenario, campus, target, minute }: BusTrackerProps) {
-  const routeLayers = useMemo<ProjectedRoute[]>(() => BUS_ROUTES.flatMap((route) => {
-    const campusPath = route.paths.find((path) => path.campusId === campus.id);
-    if (!campusPath) return [];
-    return [{
-      route,
-      points: campusPath.points.map((point) => projectGeo2d(campus, point)),
-      stops: route.stops
-        .filter((stop) => stop.campusId === campus.id)
-        .map((stop) => ({ stop, point: projectGeo2d(campus, stop.geo) })),
-    }];
-  }), [campus]);
-  const firstLayer = requireFirstRoute(routeLayers, campus.name);
+const CORE_LABEL_STOP_IDS = new Set([
+  'express-commons',
+  'chastain-rec',
+  'west-shuttle-lot',
+  'mloop-wilson',
+  'mloop-hornet',
+]);
 
-  const [selectedRouteId, setSelectedRouteId] = useState(firstLayer.route.id);
+const KENNESAW_GEOMETRY: Record<string, RouteGeometry> = {
+  'ksu-express': {
+    points: [
+      { x: 145, y: 520 }, { x: 215, y: 450 }, { x: 215, y: 365 },
+      { x: 305, y: 275 }, { x: 430, y: 275 }, { x: 520, y: 185 }, { x: 675, y: 185 },
+    ],
+    stopPoints: {
+      'express-west': { x: 145, y: 520 },
+      'express-center': { x: 305, y: 275 },
+      'express-commons': { x: 520, y: 185 },
+    },
+  },
+  'chastain-loop': {
+    points: [
+      { x: 150, y: 130 }, { x: 265, y: 130 }, { x: 345, y: 210 },
+      { x: 520, y: 210 }, { x: 575, y: 155 }, { x: 680, y: 155 },
+      { x: 575, y: 155 }, { x: 520, y: 210 }, { x: 345, y: 210 }, { x: 265, y: 130 }, { x: 150, y: 130 },
+    ],
+    stopPoints: {
+      'chastain-point': { x: 150, y: 130 },
+      'chastain-rec': { x: 265, y: 130 },
+      'chastain-center': { x: 345, y: 210 },
+      'chastain-commons': { x: 575, y: 155 },
+    },
+  },
+  'west-shuttle': {
+    points: [
+      { x: 145, y: 520 }, { x: 145, y: 425 }, { x: 85, y: 365 },
+      { x: 145, y: 305 }, { x: 145, y: 220 }, { x: 235, y: 130 },
+      { x: 400, y: 130 }, { x: 455, y: 185 }, { x: 575, y: 185 },
+    ],
+    stopPoints: {
+      'west-deck': { x: 145, y: 520 },
+      'west-shuttle-lot': { x: 85, y: 365 },
+      'west-north': { x: 235, y: 130 },
+      'west-owl': { x: 575, y: 185 },
+    },
+  },
+};
+
+const MARIETTA_GEOMETRY: Record<string, RouteGeometry> = {
+  'ksu-express': {
+    points: [
+      { x: 150, y: 140 }, { x: 245, y: 140 }, { x: 325, y: 220 },
+      { x: 455, y: 220 }, { x: 540, y: 305 }, { x: 650, y: 305 },
+      { x: 735, y: 390 }, { x: 735, y: 510 },
+    ],
+    stopPoints: {
+      'express-wilson': { x: 150, y: 140 },
+      'express-mwest': { x: 735, y: 510 },
+    },
+  },
+  'marietta-loop': {
+    points: [
+      { x: 150, y: 140 }, { x: 325, y: 140 }, { x: 405, y: 220 },
+      { x: 575, y: 220 }, { x: 690, y: 335 }, { x: 690, y: 470 },
+      { x: 620, y: 540 }, { x: 445, y: 540 }, { x: 360, y: 455 },
+      { x: 230, y: 455 }, { x: 150, y: 375 }, { x: 150, y: 140 },
+    ],
+    stopPoints: {
+      'mloop-wilson': { x: 150, y: 140 },
+      'mloop-johnson': { x: 405, y: 220 },
+      'mloop-stingers': { x: 360, y: 455 },
+      'mloop-hornet': { x: 620, y: 540 },
+      'mloop-west': { x: 690, y: 470 },
+    },
+  },
+};
+
+function stopLabelPosition(point: BusPathPoint): Pick<SchematicStop, 'labelX' | 'labelY' | 'anchor'> {
+  const anchor = point.x > 610 ? 'end' : 'start';
+  return {
+    labelX: point.x + (anchor === 'end' ? -14 : 14),
+    labelY: point.y - 12,
+    anchor,
+  };
+}
+
+function createSchematicRoutes(campus: Campus): SchematicRoute[] {
+  const geometries = campus.id === 'kennesaw' ? KENNESAW_GEOMETRY : MARIETTA_GEOMETRY;
+  return BUS_ROUTES.flatMap((route) => {
+    const geometry = geometries[route.id];
+    if (!geometry) return [];
+    const stops = route.stops
+      .filter((stop) => stop.campusId === campus.id)
+      .flatMap((stop) => {
+        const point = geometry.stopPoints[stop.id];
+        if (!point) return [];
+        return [{ stop, point, ...stopLabelPosition(point) }];
+      });
+    return [{ route, points: [...geometry.points], stops }];
+  });
+}
+
+export function BusTracker({ scenario, campus, minute }: BusTrackerProps) {
+  const routeLayers = useMemo(() => createSchematicRoutes(campus), [campus]);
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
   const busRefs = useRef<Record<string, SVGGElement | null>>({});
   const animationRef = useRef<number | null>(null);
   const nowSeconds = useNowSeconds();
-  const selectedLayer = routeLayers.find((layer) => layer.route.id === selectedRouteId) ?? firstLayer;
-  const selectedBus = selectedBusId
+  const selectedLayer = selectedBusId
+    ? routeLayers.find((layer) => layer.route.buses.some((bus) => bus.id === selectedBusId))
+    : undefined;
+  const selectedBus = selectedBusId && selectedLayer
     ? selectedLayer.route.buses.find((bus) => bus.id === selectedBusId)
     : undefined;
   const telemetry = useMemo(
-    () => selectedBus
+    () => selectedLayer && selectedBus
       ? busTelemetry(selectedLayer.route, selectedBus, scenario, nowSeconds, campus.id, minute)
       : null,
-    [campus.id, minute, nowSeconds, scenario, selectedBus, selectedLayer.route],
+    [campus.id, minute, nowSeconds, scenario, selectedBus, selectedLayer],
   );
-  const streets = getCampusStreets(campus.id);
 
   useEffect(() => {
-    if (routeLayers.some((layer) => layer.route.id === selectedRouteId)) return;
-    setSelectedRouteId(firstLayer.route.id);
     setSelectedBusId(null);
-  }, [firstLayer.route.id, routeLayers, selectedRouteId]);
+  }, [campus.id]);
 
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -83,7 +169,7 @@ export function BusTracker({ scenario, campus, target, minute }: BusTrackerProps
           const element = busRefs.current[bus.id];
           if (!element) continue;
           const point = busPoint(layer.points, bus, reducedMotion ? 0 : elapsedMs);
-          element.setAttribute('transform', `translate(${point.x} ${point.y}) rotate(${point.angle})`);
+          element.setAttribute('transform', `translate(${point.x} ${point.y})`);
         }
       }
       if (!reducedMotion) animationRef.current = window.requestAnimationFrame(update);
@@ -96,149 +182,62 @@ export function BusTracker({ scenario, campus, target, minute }: BusTrackerProps
   }, [routeLayers]);
 
   return (
-    <section className="ps-bus-tracker" aria-labelledby="ps-bus-title">
-      <div className="ps-bus-toolbar">
-        <div><span><BusFront size={20} /></span><div><small>PASSIO GO!-STYLE LIVE SIMULATION</small><h2 id="ps-bus-title">Live Big Owl Bus · {campus.name}</h2></div></div>
-        <p>North-up campus layer · smooth vehicle telemetry · SIM</p>
-      </div>
-
-      <div className="ps-bus-route-tabs" role="group" aria-label={`${campus.name} bus routes`}>
-        {routeLayers.map(({ route }) => (
-          <button
-            type="button"
-            key={route.id}
-            aria-pressed={route.id === selectedLayer.route.id}
-            onClick={() => {
-              setSelectedRouteId(route.id);
-              setSelectedBusId(null);
-            }}
-          >
-            <i style={{ background: route.color }} />
-            <span><strong>{route.name}</strong><small>Every {route.headwayMin} min · SIM</small></span>
-          </button>
-        ))}
-      </div>
-
-      <div className="ps-bus-vehicle-picker" role="group" aria-label={`${selectedLayer.route.name} buses`}>
-        <span>Vehicles on selected route</span>
-        {selectedLayer.route.buses.map((bus) => (
-          <button
-            type="button"
-            key={bus.id}
-            aria-pressed={bus.id === selectedBusId}
-            onClick={() => setSelectedBusId(bus.id)}
-          >
-            <BusFront size={14} /> {bus.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="ps-bus-layout">
-        <div className="ps-bus-map-shell">
-          <svg viewBox="0 0 1000 600" role="img" aria-label={`Animated Big Owl Bus routes over the ${campus.name} map`}>
-            <defs>
-              <pattern id={`ps-bus-grain-${campus.id}`} width="42" height="42" patternUnits="userSpaceOnUse">
-                <circle cx="5" cy="9" r="1" className="ps-satellite-grain" />
-                <circle cx="31" cy="25" r=".8" className="ps-satellite-grain" />
-              </pattern>
-            </defs>
-            <rect width="1000" height="600" rx="18" className="ps-map2d-bg" />
-            <path d="M55 92L294 50L512 78L747 48L947 115L925 512L720 552L476 524L250 558L70 502Z" className="ps-map2d-campus" />
-            <rect width="1000" height="600" rx="18" fill={`url(#ps-bus-grain-${campus.id})`} />
-            {streets.map((street) => {
-              const points = street.points.map((point) => projectGeo2d(campus, point));
-              const polyline = points.map((point) => `${point.x},${point.y}`).join(' ');
-              const labelPoint = points[Math.floor(points.length / 2)];
-              return (
-                <g key={street.id} className="ps-map2d-street">
-                  <polyline className="ps-map2d-road-casing" points={polyline} />
-                  <polyline className="ps-map2d-road" points={polyline} />
-                  <polyline className="ps-map2d-road-lane" points={polyline} />
-                  {labelPoint && <text x={labelPoint.x} y={labelPoint.y - 10}>{street.name}</text>}
-                </g>
-              );
-            })}
-            {campus.places.map((place) => {
-              const point = projectGeo2d(campus, place.geo);
-              const footprint = projectFootprint(place.footprint);
-              const selected = place.id === target.id;
-              return (
-                <g key={place.id} className={selected ? 'ps-map2d-building ps-map2d-building--target' : 'ps-map2d-building'}>
-                  <rect x={point.x - footprint.width / 2} y={point.y - footprint.depth / 2} width={footprint.width} height={footprint.depth} rx="4" />
-                  <text x={point.x} y={point.y + footprint.depth / 2 + 14} textAnchor="middle">{place.short}</text>
-                </g>
-              );
-            })}
-            {routeLayers.map((layer) => (
-              <g key={layer.route.id} className={layer.route.id === selectedLayer.route.id ? 'ps-bus-route ps-bus-route--selected' : 'ps-bus-route'}>
-                <polyline className="ps-bus-route-glow" points={routePolyline(layer.points)} fill="none" stroke={layer.route.color} />
-                <polyline points={routePolyline(layer.points)} fill="none" stroke={layer.route.color} />
-                {layer.stops.map(({ stop, point }) => (
-                  <g key={stop.id} transform={`translate(${point.x} ${point.y})`} className="ps-bus-stop">
-                    <circle r="8" style={{ stroke: layer.route.color }} />
-                    {layer.route.id === selectedLayer.route.id && <text y="-14" textAnchor="middle">{stop.name}</text>}
-                  </g>
-                ))}
-                {layer.route.buses.map((bus) => (
-                  <g
-                    key={bus.id}
-                    ref={(element) => { busRefs.current[bus.id] = element; }}
-                    className={bus.id === selectedBusId ? 'ps-bus-marker ps-bus-marker--selected' : 'ps-bus-marker'}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`${bus.label} on ${layer.route.name}`}
-                    onClick={() => {
-                      setSelectedRouteId(layer.route.id);
-                      setSelectedBusId(bus.id);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key !== 'Enter' && event.key !== ' ') return;
-                      event.preventDefault();
-                      setSelectedRouteId(layer.route.id);
-                      setSelectedBusId(bus.id);
-                    }}
-                  >
-                    <rect x="-18" y="-11" width="36" height="22" rx="6" style={{ fill: layer.route.color }} />
-                    <path d="M-10-4h20v8h-20z" fill="#0B1017" opacity=".84" />
-                    <circle cx="-10" cy="12" r="4" fill="#F8FAFC" />
-                    <circle cx="10" cy="12" r="4" fill="#F8FAFC" />
-                  </g>
-                ))}
+    <div className="ps-p6-bus-layer">
+      <svg className="ps-p6-transit-map" viewBox="0 0 1000 625" role="img" aria-label={`Animated MARTA-style Big Owl Bus routes at ${campus.name}`}>
+        {routeLayers.map((layer) => (
+          <g key={layer.route.id} className="ps-p6-transit-route">
+            <polyline className="ps-p6-route-casing" points={routePolyline(layer.points)} />
+            <polyline points={routePolyline(layer.points)} fill="none" stroke={layer.route.color} />
+            {layer.stops.map(({ stop, point, labelX, labelY, anchor }) => (
+              <g key={stop.id} className="ps-p6-transit-stop">
+                <circle cx={point.x} cy={point.y} r="8" />
+                {CORE_LABEL_STOP_IDS.has(stop.id) && <text x={labelX} y={labelY} textAnchor={anchor}>{stop.name}</text>}
               </g>
             ))}
-          </svg>
-          <div className="ps-bus-map-legend"><span><i /> Moving bus</span><span><i /> Selected route</span><span>requestAnimationFrame · SIM</span></div>
-        </div>
+            {layer.route.buses.map((bus) => (
+              <g
+                key={bus.id}
+                ref={(element) => { busRefs.current[bus.id] = element; }}
+                className={bus.id === selectedBusId ? 'ps-p6-bus-pill ps-p6-bus-pill--selected' : 'ps-p6-bus-pill'}
+                role="button"
+                tabIndex={0}
+                aria-label={`${bus.label} on ${layer.route.name}`}
+                onClick={() => setSelectedBusId(bus.id)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter' && event.key !== ' ') return;
+                  event.preventDefault();
+                  setSelectedBusId(bus.id);
+                }}
+              >
+                <rect x="-24" y="-13" width="48" height="26" rx="13" style={{ fill: layer.route.color }} />
+                <BusFront x={-8} y={-8} size={16} />
+              </g>
+            ))}
+          </g>
+        ))}
+      </svg>
 
-        <aside className="ps-bus-detail" aria-live="polite">
-          {selectedBus && telemetry ? (
-            <>
-              <div className="ps-bus-detail__eyebrow">
-                <span className="ps-bus-detail__label">LIVE VEHICLE · SIM</span>
-                {telemetry.loadPct > 85 && <strong>Pass-Up Risk</strong>}
-              </div>
-              <h3>{selectedBus.label}</h3>
-              <p>{selectedLayer.route.name}</p>
-              <div className="ps-bus-load">
-                <UsersRound size={18} />
-                <span><strong>{telemetry.loadPct}% passenger load</strong><small>{telemetry.loadPct > 85 ? 'Standing room / pass-up possible' : telemetry.loadPct > 70 ? 'Busy' : 'Seats likely available'} · SIM</small></span>
-              </div>
-              <dl>
-                <div><dt><Navigation size={15} /> Status</dt><dd>{telemetry.delayMin ? `Delayed +${telemetry.delayMin} min` : 'On time'}</dd></div>
-                <div><dt><MapPin size={15} /> Next stop</dt><dd>{telemetry.nextStop}</dd></div>
-                <div><dt><Clock3 size={15} /> Next-stop ETA</dt><dd>{telemetry.etaMin} min</dd></div>
-              </dl>
-              <a className="ps-passio-link" href="https://kennesawstate.passiogo.com/" target="_blank" rel="noopener noreferrer">Open Official Passio GO! ↗</a>
-            </>
-          ) : (
-            <div className="ps-bus-detail__empty"><BusFront size={37} /><h3>Choose a moving bus</h3><p>Open live-style route, load, status, next-stop ETA, and pass-up risk telemetry.</p></div>
-          )}
-          <div className="ps-route-stops">
-            <span>Route stops</span>
-            {selectedLayer.stops.map(({ stop }, index) => <p key={stop.id}><i>{index + 1}</i>{stop.name}</p>)}
+      {selectedLayer && selectedBus && telemetry && (
+        <aside className="ps-p6-bus-card" aria-live="polite">
+          <button type="button" aria-label="Close bus details" onClick={() => setSelectedBusId(null)}><X size={15} /></button>
+          <div className="ps-p6-bus-card__eyebrow">
+            <span>LIVE VEHICLE · SIM</span>
+            {telemetry.loadPct > 85 && <strong>Pass-Up Risk</strong>}
           </div>
+          <h2>{selectedBus.label}</h2>
+          <p>{selectedLayer.route.name}</p>
+          <div className="ps-p6-bus-load">
+            <UsersRound size={18} />
+            <span><strong>{telemetry.loadPct}% load</strong><small>{telemetry.loadPct > 85 ? 'Standing room / pass-up possible' : 'Boarding available'}</small></span>
+          </div>
+          <dl>
+            <div><dt><Navigation size={14} /> Status</dt><dd>{telemetry.delayMin ? `+${telemetry.delayMin} min` : 'On time'}</dd></div>
+            <div><dt><MapPin size={14} /> Next stop</dt><dd>{telemetry.nextStop}</dd></div>
+            <div><dt><Clock3 size={14} /> ETA</dt><dd>{telemetry.etaMin} min</dd></div>
+          </dl>
+          <a href="https://kennesawstate.passiogo.com/" target="_blank" rel="noopener noreferrer">Open Passio GO! ↗</a>
         </aside>
-      </div>
-    </section>
+      )}
+    </div>
   );
 }

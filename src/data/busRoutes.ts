@@ -36,7 +36,7 @@ export const BUS_ROUTES: readonly BusTrackerRoute[] = [
       { id: 'express-commons', name: 'The Commons', campusId: 'kennesaw', geo: { lat: 34.0399, lng: -84.58182 } },
       { id: 'express-center', name: 'Carmichael Student Center', campusId: 'kennesaw', geo: { lat: 34.03849, lng: -84.58301 } },
       { id: 'express-west', name: 'West Deck', campusId: 'kennesaw', geo: { lat: 34.03771, lng: -84.58597 } },
-      { id: 'express-wilson', name: 'Wilson Student Center', campusId: 'marietta', geo: { lat: 33.94054, lng: -84.52041 } },
+      { id: 'express-wilson', name: 'Joe Mack Wilson Student Center', campusId: 'marietta', geo: { lat: 33.94054, lng: -84.52041 } },
       { id: 'express-mwest', name: 'Marietta West Deck', campusId: 'marietta', geo: { lat: 33.93785, lng: -84.52278 } },
     ],
     buses: [
@@ -46,8 +46,8 @@ export const BUS_ROUTES: readonly BusTrackerRoute[] = [
   },
   {
     id: 'marietta-loop',
-    name: 'Marietta Loop',
-    color: '#38BDF8',
+    name: 'Marietta Campus Loop',
+    color: '#10B981',
     headwayMin: 8,
     paths: [
       {
@@ -65,9 +65,10 @@ export const BUS_ROUTES: readonly BusTrackerRoute[] = [
       },
     ],
     stops: [
-      { id: 'mloop-wilson', name: 'Wilson Student Center', campusId: 'marietta', geo: { lat: 33.94054, lng: -84.52041 } },
+      { id: 'mloop-wilson', name: 'Joe Mack Wilson Student Center', campusId: 'marietta', geo: { lat: 33.94054, lng: -84.52041 } },
       { id: 'mloop-johnson', name: 'Johnson Library', campusId: 'marietta', geo: { lat: 33.93912, lng: -84.52017 } },
       { id: 'mloop-stingers', name: 'Stingers', campusId: 'marietta', geo: { lat: 33.93738, lng: -84.5223 } },
+      { id: 'mloop-hornet', name: 'Hornet Village', campusId: 'marietta', geo: { lat: 33.9361, lng: -84.5213 } },
       { id: 'mloop-west', name: 'West Deck', campusId: 'marietta', geo: { lat: 33.93785, lng: -84.52278 } },
     ],
     buses: [
@@ -78,7 +79,7 @@ export const BUS_ROUTES: readonly BusTrackerRoute[] = [
   {
     id: 'chastain-loop',
     name: 'Chastain Pointe / Rec Center',
-    color: '#10B981',
+    color: '#22D3EE',
     headwayMin: 12,
     paths: [
       {
@@ -95,7 +96,7 @@ export const BUS_ROUTES: readonly BusTrackerRoute[] = [
     ],
     stops: [
       { id: 'chastain-point', name: 'Chastain Pointe', campusId: 'kennesaw', geo: { lat: 34.04372, lng: -84.58476 } },
-      { id: 'chastain-rec', name: 'Rec Center / Bookstore', campusId: 'kennesaw', geo: { lat: 34.04201, lng: -84.58363 } },
+      { id: 'chastain-rec', name: 'Rec Center', campusId: 'kennesaw', geo: { lat: 34.04201, lng: -84.58363 } },
       { id: 'chastain-commons', name: 'The Commons', campusId: 'kennesaw', geo: { lat: 34.0399, lng: -84.58182 } },
       { id: 'chastain-center', name: 'Carmichael Student Center', campusId: 'kennesaw', geo: { lat: 34.03849, lng: -84.58301 } },
     ],
@@ -106,8 +107,8 @@ export const BUS_ROUTES: readonly BusTrackerRoute[] = [
   },
   {
     id: 'west-shuttle',
-    name: 'West Campus / Shuttle Lot',
-    color: '#A78BFA',
+    name: 'West Campus / Economy Shuttle Lot',
+    color: '#F59E0B',
     headwayMin: 10,
     paths: [
       {
@@ -126,7 +127,7 @@ export const BUS_ROUTES: readonly BusTrackerRoute[] = [
     ],
     stops: [
       { id: 'west-deck', name: 'West Deck', campusId: 'kennesaw', geo: { lat: 34.03771, lng: -84.58597 } },
-      { id: 'west-shuttle-lot', name: 'West Campus Shuttle Lot', campusId: 'kennesaw', geo: { lat: 34.04126, lng: -84.58662 } },
+      { id: 'west-shuttle-lot', name: 'Shuttle Lot', campusId: 'kennesaw', geo: { lat: 34.04126, lng: -84.58662 } },
       { id: 'west-north', name: 'North Deck', campusId: 'kennesaw', geo: { lat: 34.04372, lng: -84.58476 } },
       { id: 'west-owl', name: 'Owl Dr / The Commons', campusId: 'kennesaw', geo: { lat: 34.03967, lng: -84.58246 } },
     ],

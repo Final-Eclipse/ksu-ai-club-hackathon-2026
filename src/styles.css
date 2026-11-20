@@ -6844,3 +6844,598 @@ summary {
     transition: none;
   }
 }
+
+/* OwlFlow P6 · clean KSU overlay and MARTA-style transit schematic */
+.ps-map-section--p6 {
+  margin-top: var(--ps-gap);
+  overflow-x: auto;
+}
+
+.ps-clean-map-shell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-width: 680px;
+  aspect-ratio: 16 / 10;
+  border: 1px solid rgb(255 255 255 / .15);
+  border-radius: 20px;
+  background: #091018;
+  box-shadow: 0 24px 70px rgb(0 0 0 / .42), inset 0 0 0 1px rgb(255 255 255 / .025);
+}
+
+.ps-map-grid-fallback,
+.ps-campus-map-image,
+.ps-campus-map-shade,
+.ps-parking-overlay,
+.ps-p6-bus-layer,
+.ps-p6-transit-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ps-map-grid-fallback {
+  z-index: -4;
+  background-color: #0A121A;
+  background-image:
+    linear-gradient(rgb(253 187 48 / .055) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(253 187 48 / .055) 1px, transparent 1px),
+    radial-gradient(circle at 28% 35%, rgb(16 185 129 / .11), transparent 35%);
+  background-size: 38px 38px, 38px 38px, 100% 100%;
+}
+
+.ps-campus-map-image {
+  z-index: -3;
+  display: block;
+  object-fit: fill;
+  filter: brightness(.38) contrast(1.2) saturate(.58);
+  opacity: .8;
+}
+
+.ps-campus-map-shade {
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgb(4 9 14 / .54) 0%, transparent 28%, transparent 70%, rgb(4 9 14 / .76) 100%),
+    linear-gradient(90deg, rgb(4 9 14 / .18), transparent 65%, rgb(4 9 14 / .26));
+}
+
+.ps-map-floating-head {
+  position: absolute;
+  z-index: 30;
+  top: .75rem;
+  left: .75rem;
+  right: .75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem;
+  pointer-events: none;
+}
+
+.ps-map-floating-head > * {
+  pointer-events: auto;
+}
+
+.ps-map-section--p6 .ps-map-mode-toggle {
+  display: inline-flex;
+  gap: .2rem;
+  padding: .25rem;
+  border: 1px solid rgb(255 255 255 / .16);
+  border-radius: 12px;
+  background: rgb(7 12 18 / .9);
+  box-shadow: 0 10px 30px rgb(0 0 0 / .32);
+  backdrop-filter: blur(12px);
+}
+
+.ps-map-section--p6 .ps-map-mode-toggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .38rem;
+  min-height: 36px;
+  padding: .42rem .72rem;
+  border: 0;
+  border-radius: 9px;
+  color: #AEB8C4;
+  background: transparent;
+  font-size: .55rem;
+  font-weight: 850;
+  letter-spacing: .01em;
+}
+
+.ps-map-section--p6 .ps-map-mode-toggle button[aria-pressed="true"] {
+  color: #11151A;
+  background: var(--ps-gold);
+  box-shadow: 0 4px 14px rgb(253 187 48 / .24);
+}
+
+.ps-campus-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: .42rem .72rem;
+  border: 1px solid rgb(255 255 255 / .18);
+  border-radius: 999px;
+  color: #F8FAFC;
+  background: rgb(7 12 18 / .88);
+  font-size: .5rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+}
+
+.ps-parking-overlay,
+.ps-p6-transit-map {
+  z-index: 2;
+  display: block;
+}
+
+.ps-p6-facility,
+.ps-p6-ev-pin,
+.ps-p6-camera-pin,
+.ps-p6-open-spot,
+.ps-p6-bus-pill {
+  cursor: pointer;
+}
+
+.ps-p6-deck-target {
+  fill: rgb(8 14 20 / .76);
+  stroke: rgb(255 255 255 / .72);
+  stroke-width: 2;
+  transition: stroke .16s ease, fill .16s ease;
+}
+
+.ps-p6-facility:hover .ps-p6-deck-target,
+.ps-p6-facility:focus-within .ps-p6-deck-target,
+.ps-p6-facility--selected .ps-p6-deck-target {
+  fill: rgb(253 187 48 / .16);
+  stroke: var(--ps-gold);
+  stroke-width: 3;
+}
+
+.ps-p6-deck-pill {
+  fill: rgb(5 10 15 / .94);
+  stroke: rgb(255 255 255 / .58);
+  stroke-width: 1.5;
+}
+
+.ps-p6-facility--selected .ps-p6-deck-pill {
+  fill: var(--ps-gold);
+  stroke: #FFE19A;
+}
+
+.ps-p6-deck-label {
+  fill: #FFFFFF;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  pointer-events: none;
+}
+
+.ps-p6-facility--selected .ps-p6-deck-label {
+  fill: #17120A;
+}
+
+.ps-p6-open-spot {
+  fill: #FFFFFF;
+  stroke: #0A1118;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px rgb(255 255 255 / .9));
+}
+
+.ps-p6-open-spot:hover,
+.ps-p6-open-spot:focus {
+  fill: var(--ps-gold);
+  stroke: #FFFFFF;
+}
+
+.ps-p6-ev-pin circle {
+  fill: #10B981;
+  stroke: #D1FAE5;
+  stroke-width: 2.5;
+}
+
+.ps-p6-ev-pin text {
+  fill: #FFFFFF;
+  font-size: 19px;
+  font-weight: 950;
+  pointer-events: none;
+}
+
+.ps-p6-ev-pin--selected circle,
+.ps-p6-ev-pin:hover circle,
+.ps-p6-ev-pin:focus circle {
+  stroke: var(--ps-gold);
+  stroke-width: 4;
+}
+
+.ps-p6-camera-pin rect {
+  fill: var(--ps-gold);
+  stroke: #FFF4D4;
+  stroke-width: 1.5;
+}
+
+.ps-p6-camera-pin svg {
+  color: #17120A;
+  pointer-events: none;
+}
+
+.ps-p6-camera-pin text {
+  fill: #FFFFFF;
+  font-size: 10px;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: #080D12;
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
+.ps-p6-camera-pin:hover rect,
+.ps-p6-camera-pin:focus rect {
+  fill: #FFFFFF;
+  stroke: var(--ps-gold);
+  stroke-width: 3;
+}
+
+.ps-camera-visibility-toggle {
+  position: absolute;
+  z-index: 20;
+  right: .75rem;
+  bottom: 3.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 34px;
+  padding: .42rem .68rem;
+  border: 1px solid rgb(253 187 48 / .48);
+  border-radius: 9px;
+  color: var(--ps-gold);
+  background: rgb(7 12 18 / .9);
+  font-size: .48rem;
+  font-weight: 900;
+  backdrop-filter: blur(10px);
+}
+
+.ps-camera-visibility-toggle[aria-pressed="true"] {
+  color: #16120A;
+  background: var(--ps-gold);
+}
+
+.ps-map-compact-legend {
+  position: absolute;
+  z-index: 25;
+  left: .75rem;
+  right: .75rem;
+  bottom: .65rem;
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  min-height: 34px;
+  padding: .42rem .7rem;
+  overflow-x: auto;
+  border: 1px solid rgb(255 255 255 / .13);
+  border-radius: 10px;
+  color: #C2CAD3;
+  background: rgb(6 11 17 / .88);
+  font-size: .43rem;
+  white-space: nowrap;
+  backdrop-filter: blur(12px);
+}
+
+.ps-map-compact-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+}
+
+.ps-route-swatch {
+  display: inline-block;
+  width: 18px;
+  height: 5px;
+  border-radius: 999px;
+}
+
+.ps-route-swatch--gold { background: #FDBB30; }
+.ps-route-swatch--emerald { background: #10B981; }
+.ps-route-swatch--cyan { background: #22D3EE; }
+.ps-route-swatch--amber { background: #F59E0B; }
+
+.ps-p6-info-card,
+.ps-p6-bus-card {
+  position: absolute;
+  z-index: 26;
+  top: 4.15rem;
+  right: .75rem;
+  width: min(285px, calc(100% - 1.5rem));
+  max-height: calc(100% - 8rem);
+  overflow-y: auto;
+  border: 1px solid rgb(253 187 48 / .58);
+  border-radius: 14px;
+  color: #F8FAFC;
+  background: rgb(6 11 17 / .94);
+  box-shadow: 0 18px 50px rgb(0 0 0 / .52);
+  backdrop-filter: blur(16px);
+}
+
+.ps-p6-info-card {
+  padding: .85rem;
+}
+
+.ps-p6-info-card > button:first-child,
+.ps-p6-bus-card > button:first-child {
+  position: absolute;
+  top: .55rem;
+  right: .55rem;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / .12);
+  border-radius: 8px;
+  color: #D5DBE2;
+  background: rgb(255 255 255 / .06);
+}
+
+.ps-p6-info-card > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: .55rem;
+  border-radius: 9px;
+  color: #17120A;
+  background: var(--ps-gold);
+}
+
+.ps-p6-info-card small,
+.ps-p6-bus-card__eyebrow span {
+  color: var(--ps-gold);
+  font-size: .42rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.ps-p6-info-card h2,
+.ps-p6-bus-card h2 {
+  margin: .25rem 2rem .2rem 0;
+  color: #FFFFFF;
+  font-size: 1rem;
+}
+
+.ps-p6-info-card p,
+.ps-p6-bus-card > p {
+  margin: .25rem 0 .6rem;
+  color: #B4BEC8;
+  font-size: .5rem;
+  line-height: 1.55;
+}
+
+.ps-p6-info-card > div {
+  display: grid;
+  gap: .2rem;
+  margin-bottom: .7rem;
+}
+
+.ps-p6-info-card > div span {
+  color: #DCE2E8;
+  font-size: .46rem;
+}
+
+.ps-p6-info-card footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .38rem;
+}
+
+.ps-p6-info-card footer a,
+.ps-p6-bus-card > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: .45rem;
+  border: 1px solid rgb(253 187 48 / .48);
+  border-radius: 8px;
+  color: var(--ps-gold);
+  font-size: .47rem;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+}
+
+.ps-p6-info-card .ps-map-clear-cv {
+  width: 100%;
+  margin: .45rem 0 0;
+}
+
+.ps-p6-bus-layer {
+  z-index: 3;
+}
+
+.ps-p6-route-casing {
+  fill: none;
+  stroke: rgb(4 8 12 / .78) !important;
+  stroke-width: 11px !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ps-p6-transit-route > polyline:not(.ps-p6-route-casing) {
+  stroke-width: 5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ps-p6-transit-stop circle {
+  fill: #0A1016;
+  stroke: #FFFFFF;
+  stroke-width: 4px;
+}
+
+.ps-p6-transit-stop text {
+  fill: #FFFFFF;
+  font-size: 13px;
+  font-weight: 850;
+  paint-order: stroke;
+  stroke: rgb(4 8 12 / .92);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+.ps-p6-bus-pill {
+  filter: drop-shadow(0 5px 8px rgb(0 0 0 / .62));
+}
+
+.ps-p6-bus-pill rect {
+  stroke: #FFFFFF;
+  stroke-width: 2px;
+}
+
+.ps-p6-bus-pill svg {
+  color: #101418;
+  pointer-events: none;
+}
+
+.ps-p6-bus-pill--selected rect,
+.ps-p6-bus-pill:hover rect,
+.ps-p6-bus-pill:focus rect {
+  stroke: #FFFFFF;
+  stroke-width: 4px;
+}
+
+.ps-p6-bus-card {
+  padding: .9rem;
+}
+
+.ps-p6-bus-card__eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  padding-right: 2rem;
+}
+
+.ps-p6-bus-card__eyebrow strong {
+  padding: .25rem .42rem;
+  border: 1px solid rgb(252 165 165 / .48);
+  border-radius: 999px;
+  color: #FCA5A5;
+  background: rgb(220 38 38 / .2);
+  font-size: .4rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.ps-p6-bus-load {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .6rem;
+  border: 1px solid rgb(255 255 255 / .1);
+  border-radius: 9px;
+  color: var(--ps-gold);
+  background: rgb(255 255 255 / .045);
+}
+
+.ps-p6-bus-load span {
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+}
+
+.ps-p6-bus-load strong {
+  color: #FFFFFF;
+  font-size: .55rem;
+}
+
+.ps-p6-bus-load small {
+  color: #AEB8C4;
+  font-size: .42rem;
+}
+
+.ps-p6-bus-card dl {
+  display: grid;
+  gap: .2rem;
+  margin: .6rem 0;
+}
+
+.ps-p6-bus-card dl > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .42rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / .08);
+}
+
+.ps-p6-bus-card dt,
+.ps-p6-bus-card dd {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  margin: 0;
+  font-size: .46rem;
+}
+
+.ps-p6-bus-card dt { color: #929EAA; }
+.ps-p6-bus-card dd { color: #F8FAFC; font-weight: 850; text-align: right; }
+
+@media (max-width: 760px) {
+  .ps-map-floating-head {
+    align-items: flex-start;
+  }
+
+  .ps-map-section--p6 .ps-map-mode-toggle {
+    flex-direction: column;
+  }
+
+  .ps-map-section--p6 .ps-map-mode-toggle button {
+    justify-content: flex-start;
+  }
+
+  .ps-p6-info-card,
+  .ps-p6-bus-card {
+    top: auto;
+    right: .75rem;
+    bottom: 3.35rem;
+    max-height: 48%;
+  }
+
+  .ps-camera-visibility-toggle {
+    right: auto;
+    left: .75rem;
+    bottom: 3.25rem;
+  }
+
+  .ps-p6-transit-stop text {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ps-campus-badge {
+    max-width: 86px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ps-map-compact-legend {
+    gap: .6rem;
+  }
+
+  .ps-p6-info-card footer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-p6-deck-target {
+    transition: none;
+  }
+}
