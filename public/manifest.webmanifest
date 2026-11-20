@@ -1,0 +1,17 @@
+{
+  "name": "OwlFlow · KSU Campus Intelligence",
+  "short_name": "OwlFlow",
+  "description": "AI-powered campus mobility and student flow engine for KSU.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0D0E12",
+  "theme_color": "#0D0E12",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
